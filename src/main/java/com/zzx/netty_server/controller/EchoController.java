@@ -45,6 +45,7 @@ public class EchoController {
      */
     @GetMapping(value = "/fixdeCode")
     public String send(String signKey, String bili) {
+        log.info("固码下单数据signKey:{},bili:{}",signKey,bili);
         String rule = "{\"100\":\"8\",\"200\":\"5\",\"500\":\"4\",\"1000\":\"3\"}";
         if ((bili != null) && (!bili.equals(""))) {
             rule = bili;
@@ -60,7 +61,7 @@ public class EchoController {
      */
     @PostMapping(value = "/inserts")
     public void inserts(@RequestBody String string) {
-        System.out.println(string);
+        System.out.println("固码收到支付宝数据："+string);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         JSONObject params = JSON.parseObject(string);
@@ -69,7 +70,7 @@ public class EchoController {
         log.info("开始请求！");
         try {
             String url = "http://" + host + ":8983/iromMan/inserts";
-            log.info("url:" + "http://" + host + ":8983/iromMan/inserts");
+            log.info("url:" + url);
             response = template.exchange(url, HttpMethod.POST, requestEntity, String.class);
             log.info("请求通道结果：" + response);
         } catch (Exception e) {
@@ -138,7 +139,7 @@ public class EchoController {
      * 测试发送接口
      *
      * @return string
-     * http://120.79.239.138:8234/netty/testSend?key=123456
+     * http://47.106.182.147:8234/netty/testSend?key=123321
      */
     @GetMapping("/testSend")
     public String testSend(String key) {
