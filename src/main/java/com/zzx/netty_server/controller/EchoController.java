@@ -132,9 +132,9 @@ public class EchoController {
         System.out.println("收到数据：" + jsonObject);
         mapdata.put(jsonObject.get("account").toString(), string);
         if (!string.equals("")) {
-            return "{\"msg\":\"success\"}";
+            return "success";
         }
-        return "{\"msg\":\"fail\"}";
+        return "fail";
     }
 
 
