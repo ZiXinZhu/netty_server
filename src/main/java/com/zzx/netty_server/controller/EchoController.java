@@ -14,10 +14,12 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 
 @RestController
@@ -29,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequestMapping("/netty")
 public class EchoController {
 
+    Queue<String> queue = new ConcurrentLinkedDeque<>();
     Map<String, String> mapdata = new ConcurrentHashMap<>();
     private String host;
 
@@ -45,7 +48,7 @@ public class EchoController {
      */
     @GetMapping(value = "/fixdeCode")
     public String send(String signKey, String bili) {
-        log.info("固码下单数据signKey:{},bili:{}",signKey,bili);
+        log.info("固码下单数据signKey:{},bili:{}", signKey, bili);
         String rule = "{\"100\":\"8\",\"200\":\"5\",\"500\":\"4\",\"1000\":\"3\"}";
         if ((bili != null) && (!bili.equals(""))) {
             rule = bili;
@@ -61,7 +64,7 @@ public class EchoController {
      */
     @PostMapping(value = "/inserts")
     public void inserts(@RequestBody String string) {
-        System.out.println("固码收到支付宝数据："+string);
+        System.out.println("固码收到支付宝数据：" + string);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         JSONObject params = JSON.parseObject(string);
@@ -129,9 +132,9 @@ public class EchoController {
         System.out.println("收到数据：" + jsonObject);
         mapdata.put(jsonObject.get("account").toString(), string);
         if (!string.equals("")) {
-            return "success";
+            return "{\"msg\":\"success\"}";
         }
-        return "fail";
+        return "{\"msg\":\"fail\"}";
     }
 
 
@@ -139,12 +142,23 @@ public class EchoController {
      * 测试发送接口
      *
      * @return string
-     * http://47.106.182.147:8234/netty/testSend?key=123321
+     * boy:
+     * http://47.106.182.147:8234/netty/testSend?key=555555
+     * kub:
+     * http://120.79.239.138:8234/netty/testSend?key=123457
      */
     @GetMapping("/testSend")
-    public String testSend(String key) {
+    public String testSend(String key) throws InterruptedException {
         String rule = "{\"code\":\"200\",\"sign\":\"147258369\"}";
-        return sentmessage(key, rule);
+        sentmessage(key, rule);
+        String msg = queue.poll();
+        for(int i=0; i<10; i++){
+            Thread.sleep(500);
+            if(msg!=null){
+                break;
+            }
+        }
+        return msg;
     }
 
 
@@ -156,6 +170,7 @@ public class EchoController {
     @PostMapping(value = "/testReceive")
     public String testReceive(@RequestBody String string) {
         System.out.println("=>=>=>=>=>=>测试app收到数据：" + string);
+        queue.add(string);
         return "success";
     }
 
@@ -173,6 +188,5 @@ public class EchoController {
         EchoServerHandler.map.get(host).writeAndFlush(byteBuffer.duplicate());
         return "发送成功！";
     }
-
 
 }
