@@ -104,8 +104,8 @@ public class EchoController {
             log.info("Exception:" + e.getMessage());
             return "{order filed},{data:" + rule + "}";
         }
-        for (int i = 0; i < 20; i++) {
-            Thread.sleep(300);
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep(500);
             String url = mapdata.get(order);
             log.info("得到支付链接：" + url);
             if (null != url) {
@@ -130,11 +130,15 @@ public class EchoController {
         System.out.println(string);
         JSONObject jsonObject = JSON.parseObject(string);
         System.out.println("收到数据：" + jsonObject);
+        if(string.contains("msg")){
+            mapdata.put(jsonObject.get("account").toString(), string);
+            return "fail";
+        }
         mapdata.put(jsonObject.get("account").toString(), string);
         if (!string.equals("")) {
             return "success";
         }
-        return "fail";
+        return "error";
     }
 
 
